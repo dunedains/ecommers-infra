@@ -12,4 +12,8 @@ git clone https://github.com/dunedains/ecommers-pagos.git
 git clone https://github.com/dunedains/ecommers-notifications.git
 
 echo.
+echo Construyendo imagen base (descarga dependencias una sola vez)...
+docker build -t ecommers-base ./base
+
+echo.
 echo Listo. Ahora ejecuta: docker compose up --build

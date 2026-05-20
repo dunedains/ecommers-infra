@@ -30,6 +30,7 @@ services:
     build:
       context: ./ecommers-productos
       dockerfile: Dockerfile
+    image: ecommers-productos
     container_name: ecommers-productos
     restart: unless-stopped
     ports:
@@ -46,6 +47,7 @@ services:
     build:
       context: ./ecommers-user
       dockerfile: Dockerfile
+    image: ecommers-users
     container_name: ecommers-users
     restart: unless-stopped
     ports:
@@ -62,6 +64,7 @@ services:
     build:
       context: ./ecommers-whiltelist
       dockerfile: Dockerfile
+    image: ecommers-whitelist
     container_name: ecommers-whitelist
     restart: unless-stopped
     ports:
@@ -80,6 +83,7 @@ services:
     build:
       context: ./ecommers-reviw
       dockerfile: Dockerfile
+    image: ecommers-reviews
     container_name: ecommers-reviews
     restart: unless-stopped
     ports:
@@ -98,6 +102,7 @@ services:
     build:
       context: ./ecommers-Inventory
       dockerfile: Dockerfile
+    image: ecommers-inventory
     container_name: ecommers-inventory
     restart: unless-stopped
     ports:
@@ -115,6 +120,7 @@ services:
     build:
       context: ./ecommers-cart
       dockerfile: Dockerfile
+    image: ecommers-cart
     container_name: ecommers-cart
     restart: unless-stopped
     ports:
@@ -133,6 +139,7 @@ services:
     build:
       context: ./ecommers-notifications
       dockerfile: Dockerfile
+    image: ecommers-notifications
     container_name: ecommers-notifications
     restart: unless-stopped
     ports:
@@ -149,6 +156,7 @@ services:
     build:
       context: ./ecommers-order
       dockerfile: Dockerfile
+    image: ecommers-orders
     container_name: ecommers-orders
     restart: unless-stopped
     ports:
@@ -169,6 +177,7 @@ services:
     build:
       context: ./ecommers-pagos
       dockerfile: Dockerfile
+    image: ecommers-pagos
     container_name: ecommers-pagos
     restart: unless-stopped
     ports:
