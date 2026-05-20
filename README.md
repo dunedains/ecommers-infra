@@ -9,15 +9,19 @@ Plataforma de e-commerce basada en microservicios con Spring Boot y PostgreSQL.
 
 ## Levantar el proyecto
 
-```bash
-# 1. Clonar este repo
+**Windows:**
+```cmd
 git clone https://github.com/dunedains/ecommers-infra.git
 cd ecommers-infra
+setup.bat
+docker compose up --build
+```
 
-# 2. Clonar los microservicios
+**Mac/Linux:**
+```bash
+git clone https://github.com/dunedains/ecommers-infra.git
+cd ecommers-infra
 chmod +x setup.sh && ./setup.sh
-
-# 3. Levantar todo
 docker compose up --build
 ```
 
