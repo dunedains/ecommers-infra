@@ -33,6 +33,8 @@ services:
     image: ecommers-productos
     container_name: ecommers-productos
     restart: unless-stopped
+    volumes:
+      - ./logs/productos:/logs/productos
     ports:
       - "8081:8081"
     environment:
@@ -50,6 +52,8 @@ services:
     image: ecommers-users
     container_name: ecommers-users
     restart: unless-stopped
+    volumes:
+      - ./logs/users:/logs/users
     ports:
       - "8082:8082"
     environment:
@@ -67,6 +71,8 @@ services:
     image: ecommers-whitelist
     container_name: ecommers-whitelist
     restart: unless-stopped
+    volumes:
+      - ./logs/whitelist:/logs/whitelist
     ports:
       - "8083:8083"
     environment:
@@ -86,6 +92,8 @@ services:
     image: ecommers-reviews
     container_name: ecommers-reviews
     restart: unless-stopped
+    volumes:
+      - ./logs/reviews:/logs/reviews
     ports:
       - "8084:8084"
     environment:
@@ -105,6 +113,8 @@ services:
     image: ecommers-inventory
     container_name: ecommers-inventory
     restart: unless-stopped
+    volumes:
+      - ./logs/inventory:/logs/inventory
     ports:
       - "8085:8085"
     environment:
@@ -123,6 +133,8 @@ services:
     image: ecommers-cart
     container_name: ecommers-cart
     restart: unless-stopped
+    volumes:
+      - ./logs/cart:/logs/cart
     ports:
       - "8086:8086"
     environment:
@@ -142,6 +154,8 @@ services:
     image: ecommers-notifications
     container_name: ecommers-notifications
     restart: unless-stopped
+    volumes:
+      - ./logs/notifications:/logs/notifications
     ports:
       - "8089:8089"
     environment:
@@ -159,6 +173,8 @@ services:
     image: ecommers-orders
     container_name: ecommers-orders
     restart: unless-stopped
+    volumes:
+      - ./logs/orders:/logs/orders
     ports:
       - "8087:8087"
     environment:
@@ -180,6 +196,8 @@ services:
     image: ecommers-pagos
     container_name: ecommers-pagos
     restart: unless-stopped
+    volumes:
+      - ./logs/pagos:/logs/pagos
     ports:
       - "8088:8088"
     environment:
@@ -198,3 +216,6 @@ services:
 
 volumes:
   postgres_data:
+
+  # Logs (compartidos para analisis externo)
+  logs:
