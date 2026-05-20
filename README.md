@@ -2,6 +2,25 @@
 
 Plataforma de e-commerce basada en microservicios con Spring Boot y PostgreSQL.
 
+## Integrantes
+
+| Nombre | Correo |
+|--------|--------|
+| Felipe Zapata | fe.zapatao@duocuc.cl |
+
+## Descripcion del proyecto
+
+Sistema de comercio electronico compuesto por 9 microservicios independientes, cada uno con su propia base de datos PostgreSQL. La arquitectura permite gestionar el ciclo completo de compra:
+
+- **Catalogo y usuarios**: gestion de productos y registro de usuarios
+- **Carrito e inventario**: control de stock en tiempo real y carrito de compras con validacion de disponibilidad
+- **Ordenes y pagos**: creacion de ordenes con calculo automatico de totales, procesamiento de pagos con actualizacion de estado de la orden (PENDING, CONFIRMED, CANCELLED)
+- **Notificaciones**: generacion automatica de notificaciones al crear ordenes, confirmar pagos o realizar reembolsos
+- **Wishlist y reviews**: lista de deseos y resenas de productos con validacion de existencia via Feign
+- **Comunicacion entre servicios**: los microservicios se comunican via Spring Cloud OpenFeign para validar datos y orquestar flujos de negocio
+- **Logs estructurados**: cada servicio escribe logs a archivo con rotacion diaria, montados via volumenes Docker para ser consumidos por herramientas externas
+- **Migraciones**: todas las tablas se crean automaticamente con Flyway al levantar los servicios
+
 ## Requisitos
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) instalado y corriendo
