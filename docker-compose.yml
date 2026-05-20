@@ -1,0 +1,191 @@
+services:
+
+  # ════════════════════════════════════════════════════════════
+  #  BASE DE DATOS  —  PostgreSQL 16 (instancia única)
+  # ════════════════════════════════════════════════════════════
+  postgres:
+    image: postgres:16-alpine
+    container_name: ecommers-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ecommers
+      POSTGRES_PASSWORD: ecommers_pass
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-databases.sql:/docker-entrypoint-initdb.d/init-databases.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecommers"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ════════════════════════════════════════════════════════════
+  #  MICROSERVICIOS
+  # ════════════════════════════════════════════════════════════
+
+  productos:
+    build:
+      context: ./ecommers-productos/productos
+      dockerfile: Dockerfile
+    container_name: ecommers-productos
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_productos
+      SPRING_DATASOURCE_USERNAME: ecommers
+      SPRING_DATASOURCE_PASSWORD: ecommers_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  users:
+    build:
+      context: ./ecommers-user/users
+      dockerfile: Dockerfile
+    container_name: ecommers-users
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_users
+      SPRING_DATASOURCE_USERNAME: ecommers
+      SPRING_DATASOURCE_PASSWORD: ecommers_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  whitelist:
+    build:
+      context: ./ecommers-whiltelist
+      dockerfile: Dockerfile
+    container_name: ecommers-whitelist
+    restart: unless-stopped
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_whitelist
+      SPRING_DATASOURCE_USERNAME: ecommers
+      SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
+      FEIGN_CLIENT_USER_URL: http://users:8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  reviews:
+    build:
+      context: ./ecommers-reviw
+      dockerfile: Dockerfile
+    container_name: ecommers-reviews
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_reviews
+      SPRING_DATASOURCE_USERNAME: ecommers
+      SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
+      FEIGN_CLIENT_USER_URL: http://users:8082
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  inventory:
+    build:
+      context: ./ecommers-Inventory
+      dockerfile: Dockerfile
+    container_name: ecommers-inventory
+    restart: unless-stopped
+    ports:
+      - "8085:8085"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_inventory
+      SPRING_DATASOURCE_USERNAME: ecommers
+      SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  cart:
+    build:
+      context: ./ecommers-cart/cart
+      dockerfile: Dockerfile
+    container_name: ecommers-cart
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_cart
+      SPRING_DATASOURCE_USERNAME: ecommers
+      SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
+      FEIGN_CLIENT_INVENTORY_URL: http://inventory:8085
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  notifications:
+    build:
+      context: ./ecommers-notifications
+      dockerfile: Dockerfile
+    container_name: ecommers-notifications
+    restart: unless-stopped
+    ports:
+      - "8089:8089"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_notifications
+      SPRING_DATASOURCE_USERNAME: ecommers
+      SPRING_DATASOURCE_PASSWORD: ecommers_pass
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  orders:
+    build:
+      context: ./ecommers-order/orders
+      dockerfile: Dockerfile
+    container_name: ecommers-orders
+    restart: unless-stopped
+    ports:
+      - "8087:8087"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_orders
+      SPRING_DATASOURCE_USERNAME: ecommers
+      SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
+      FEIGN_CLIENT_NOTIFICATION_URL: http://notifications:8089
+    depends_on:
+      postgres:
+        condition: service_healthy
+      notifications:
+        condition: service_started
+
+  pagos:
+    build:
+      context: ./ecommers-pagos/pagos
+      dockerfile: Dockerfile
+    container_name: ecommers-pagos
+    restart: unless-stopped
+    ports:
+      - "8088:8088"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_pagos
+      SPRING_DATASOURCE_USERNAME: ecommers
+      SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      FEIGN_CLIENT_ORDER_URL: http://orders:8087
+      FEIGN_CLIENT_NOTIFICATION_URL: http://notifications:8089
+    depends_on:
+      postgres:
+        condition: service_healthy
+      orders:
+        condition: service_started
+      notifications:
+        condition: service_started
+
+volumes:
+  postgres_data:
