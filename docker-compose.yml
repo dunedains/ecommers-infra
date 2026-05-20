@@ -28,7 +28,7 @@ services:
 
   productos:
     build:
-      context: ./ecommers-productos/productos
+      context: ./ecommers-productos
       dockerfile: Dockerfile
     container_name: ecommers-productos
     restart: unless-stopped
@@ -44,7 +44,7 @@ services:
 
   users:
     build:
-      context: ./ecommers-user/users
+      context: ./ecommers-user
       dockerfile: Dockerfile
     container_name: ecommers-users
     restart: unless-stopped
@@ -113,7 +113,7 @@ services:
 
   cart:
     build:
-      context: ./ecommers-cart/cart
+      context: ./ecommers-cart
       dockerfile: Dockerfile
     container_name: ecommers-cart
     restart: unless-stopped
@@ -147,7 +147,7 @@ services:
 
   orders:
     build:
-      context: ./ecommers-order/orders
+      context: ./ecommers-order
       dockerfile: Dockerfile
     container_name: ecommers-orders
     restart: unless-stopped
@@ -167,7 +167,7 @@ services:
 
   pagos:
     build:
-      context: ./ecommers-pagos/pagos
+      context: ./ecommers-pagos
       dockerfile: Dockerfile
     container_name: ecommers-pagos
     restart: unless-stopped
