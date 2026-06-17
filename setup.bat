@@ -10,6 +10,7 @@ git clone https://github.com/dunedains/ecommers-cart.git
 git clone https://github.com/dunedains/ecommers-order.git
 git clone https://github.com/dunedains/ecommers-pagos.git
 git clone https://github.com/dunedains/ecommers-notifications.git
+git clone https://github.com/dunedains/ecommers-gateway.git
 
 echo.
 echo Construyendo imagen base (descarga dependencias una sola vez)...
