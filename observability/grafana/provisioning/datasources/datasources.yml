@@ -1,0 +1,30 @@
+apiVersion: 1
+
+datasources:
+  # Logs
+  - name: Loki
+    type: loki
+    access: proxy
+    uid: loki
+    url: http://loki:3100
+    jsonData:
+      # Enlaza el traceId que aparece en el log JSON con la traza en Tempo
+      derivedFields:
+        - name: TraceID
+          datasourceUid: tempo
+          matcherRegex: '"traceId":"(\w+)"'
+          url: '${__value.raw}'
+
+  # Trazas
+  - name: Tempo
+    type: tempo
+    access: proxy
+    uid: tempo
+    url: http://tempo:3200
+    jsonData:
+      # Enlaza una traza con sus logs en Loki (filtrando por traceId)
+      tracesToLogsV2:
+        datasourceUid: loki
+        filterByTraceID: true
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'

@@ -38,6 +38,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_productos
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
     volumes:
       - ./logs/productos:/logs/productos
     healthcheck:
@@ -61,6 +62,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_users
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
     volumes:
       - ./logs/users:/logs/users
     healthcheck:
@@ -84,6 +86,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_whitelist
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
       FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
       FEIGN_CLIENT_USER_URL: http://users:8082
     volumes:
@@ -109,6 +112,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_reviews
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
       FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
       FEIGN_CLIENT_USER_URL: http://users:8082
     volumes:
@@ -134,6 +138,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_inventory
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
       FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
     volumes:
       - ./logs/inventory:/logs/inventory
@@ -158,6 +163,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_cart
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
       FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
       FEIGN_CLIENT_INVENTORY_URL: http://inventory:8085
     volumes:
@@ -183,6 +189,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_notifications
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
     volumes:
       - ./logs/notifications:/logs/notifications
     healthcheck:
@@ -206,6 +213,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_orders
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
       FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
       FEIGN_CLIENT_NOTIFICATION_URL: http://notifications:8089
     volumes:
@@ -233,6 +241,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_pagos
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
       FEIGN_CLIENT_ORDER_URL: http://orders:8087
       FEIGN_CLIENT_NOTIFICATION_URL: http://notifications:8089
     volumes:
@@ -275,6 +284,7 @@ services:
       ORDERS_URI: http://orders:8087
       PAGOS_URI: http://pagos:8088
       NOTIFICATIONS_URI: http://notifications:8089
+      ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
       interval: 15s
@@ -301,5 +311,62 @@ services:
       notifications:
         condition: service_healthy
 
+  # ════════════════════════════════════════════════════════════
+  #  OBSERVABILIDAD  —  Logs (Loki) + Trazas (Tempo) + Grafana
+  # ════════════════════════════════════════════════════════════
+
+  # Almacen de logs
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: ecommers-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+
+  # Recolector de logs: lee el stdout de todos los contenedores y los manda a Loki
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: ecommers-promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - ./observability/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - loki
+
+  # Almacen de trazas (recibe los spans de los servicios en formato Zipkin)
+  tempo:
+    image: grafana/tempo:2.5.0
+    container_name: ecommers-tempo
+    restart: unless-stopped
+    command: -config.file=/etc/tempo/tempo.yml
+    volumes:
+      - ./observability/tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo_data:/var/tempo
+    ports:
+      - "3200:3200"   # API de Tempo (consultas)
+
+  # Panel unico: logs + trazas correlacionados por traceId
+  grafana:
+    image: grafana/grafana:11.0.0
+    container_name: ecommers-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+      GF_SECURITY_ADMIN_PASSWORD: "admin"
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - loki
+      - tempo
+
 volumes:
   postgres_data:
+  tempo_data:
+  grafana_data:
