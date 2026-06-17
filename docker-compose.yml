@@ -8,7 +8,7 @@ services:
     container_name: ecommers-postgres
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "5432:5432"          # publicado solo para conectarte con un cliente en desarrollo
     environment:
       POSTGRES_USER: ecommers
       POSTGRES_PASSWORD: ecommers_pass
@@ -24,6 +24,7 @@ services:
 
   # ════════════════════════════════════════════════════════════
   #  MICROSERVICIOS
+  #  (sin puertos publicados: solo accesibles a traves del gateway)
   # ════════════════════════════════════════════════════════════
 
   productos:
@@ -33,14 +34,18 @@ services:
     image: ecommers-productos
     container_name: ecommers-productos
     restart: unless-stopped
-    ports:
-      - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_productos
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
     volumes:
       - ./logs/productos:/logs/productos
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
@@ -52,14 +57,18 @@ services:
     image: ecommers-users
     container_name: ecommers-users
     restart: unless-stopped
-    ports:
-      - "8082:8082"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_users
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
     volumes:
       - ./logs/users:/logs/users
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,8 +80,6 @@ services:
     image: ecommers-whitelist
     container_name: ecommers-whitelist
     restart: unless-stopped
-    ports:
-      - "8083:8083"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_whitelist
       SPRING_DATASOURCE_USERNAME: ecommers
@@ -81,6 +88,12 @@ services:
       FEIGN_CLIENT_USER_URL: http://users:8082
     volumes:
       - ./logs/whitelist:/logs/whitelist
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8083/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
@@ -92,8 +105,6 @@ services:
     image: ecommers-reviews
     container_name: ecommers-reviews
     restart: unless-stopped
-    ports:
-      - "8084:8084"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_reviews
       SPRING_DATASOURCE_USERNAME: ecommers
@@ -102,6 +113,12 @@ services:
       FEIGN_CLIENT_USER_URL: http://users:8082
     volumes:
       - ./logs/reviews:/logs/reviews
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8084/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
@@ -113,8 +130,6 @@ services:
     image: ecommers-inventory
     container_name: ecommers-inventory
     restart: unless-stopped
-    ports:
-      - "8085:8085"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_inventory
       SPRING_DATASOURCE_USERNAME: ecommers
@@ -122,6 +137,12 @@ services:
       FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
     volumes:
       - ./logs/inventory:/logs/inventory
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8085/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
@@ -133,8 +154,6 @@ services:
     image: ecommers-cart
     container_name: ecommers-cart
     restart: unless-stopped
-    ports:
-      - "8086:8086"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_cart
       SPRING_DATASOURCE_USERNAME: ecommers
@@ -143,6 +162,12 @@ services:
       FEIGN_CLIENT_INVENTORY_URL: http://inventory:8085
     volumes:
       - ./logs/cart:/logs/cart
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8086/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
@@ -154,14 +179,18 @@ services:
     image: ecommers-notifications
     container_name: ecommers-notifications
     restart: unless-stopped
-    ports:
-      - "8089:8089"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_notifications
       SPRING_DATASOURCE_USERNAME: ecommers
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
     volumes:
       - ./logs/notifications:/logs/notifications
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8089/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
@@ -173,8 +202,6 @@ services:
     image: ecommers-orders
     container_name: ecommers-orders
     restart: unless-stopped
-    ports:
-      - "8087:8087"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_orders
       SPRING_DATASOURCE_USERNAME: ecommers
@@ -183,11 +210,17 @@ services:
       FEIGN_CLIENT_NOTIFICATION_URL: http://notifications:8089
     volumes:
       - ./logs/orders:/logs/orders
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8087/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
       notifications:
-        condition: service_started
+        condition: service_healthy
 
   pagos:
     build:
@@ -196,8 +229,6 @@ services:
     image: ecommers-pagos
     container_name: ecommers-pagos
     restart: unless-stopped
-    ports:
-      - "8088:8088"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/db_pagos
       SPRING_DATASOURCE_USERNAME: ecommers
@@ -206,16 +237,22 @@ services:
       FEIGN_CLIENT_NOTIFICATION_URL: http://notifications:8089
     volumes:
       - ./logs/pagos:/logs/pagos
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8088/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
       postgres:
         condition: service_healthy
       orders:
-        condition: service_started
+        condition: service_healthy
       notifications:
-        condition: service_started
+        condition: service_healthy
 
   # ════════════════════════════════════════════════════════════
-  #  API GATEWAY
+  #  API GATEWAY  (unico punto de entrada publico)
   # ════════════════════════════════════════════════════════════
   gateway:
     build:
@@ -238,16 +275,31 @@ services:
       ORDERS_URI: http://orders:8087
       PAGOS_URI: http://pagos:8088
       NOTIFICATIONS_URI: http://notifications:8089
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     depends_on:
-      - productos
-      - users
-      - whitelist
-      - reviews
-      - inventory
-      - cart
-      - orders
-      - pagos
-      - notifications
+      productos:
+        condition: service_healthy
+      users:
+        condition: service_healthy
+      whitelist:
+        condition: service_healthy
+      reviews:
+        condition: service_healthy
+      inventory:
+        condition: service_healthy
+      cart:
+        condition: service_healthy
+      orders:
+        condition: service_healthy
+      pagos:
+        condition: service_healthy
+      notifications:
+        condition: service_healthy
 
 volumes:
   postgres_data:
