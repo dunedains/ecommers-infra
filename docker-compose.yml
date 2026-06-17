@@ -22,6 +22,19 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis: backend del rate limiter del gateway
+  redis:
+    image: redis:7-alpine
+    container_name: ecommers-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # ════════════════════════════════════════════════════════════
   #  MICROSERVICIOS
   #  (sin puertos publicados: solo accesibles a traves del gateway)
@@ -285,6 +298,8 @@ services:
       PAGOS_URI: http://pagos:8088
       NOTIFICATIONS_URI: http://notifications:8089
       ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP || exit 1"]
       interval: 15s
@@ -292,6 +307,8 @@ services:
       retries: 5
       start_period: 40s
     depends_on:
+      redis:
+        condition: service_healthy
       productos:
         condition: service_healthy
       users:
