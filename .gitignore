@@ -1,1 +1,4 @@
 ecommers-*/
+logs/
+.idea/
+.claude/

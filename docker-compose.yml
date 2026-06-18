@@ -228,6 +228,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: ecommers_pass
       ZIPKIN_ENDPOINT: http://tempo:9411/api/v2/spans
       FEIGN_CLIENT_PRODUCT_URL: http://productos:8081
+      FEIGN_CLIENT_INVENTORY_URL: http://inventory:8085
       FEIGN_CLIENT_NOTIFICATION_URL: http://notifications:8089
     volumes:
       - ./logs/orders:/logs/orders
@@ -239,6 +240,8 @@ services:
       start_period: 40s
     depends_on:
       postgres:
+        condition: service_healthy
+      inventory:
         condition: service_healthy
       notifications:
         condition: service_healthy
